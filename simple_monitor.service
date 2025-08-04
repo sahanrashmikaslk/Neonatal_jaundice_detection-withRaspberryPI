@@ -1,0 +1,15 @@
+[Unit]
+Description=Simplified Neonatal Jaundice Monitoring Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/sahan/jaundice_monitor/simple_monitor.py --camera 0
+WorkingDirectory=/home/sahan/jaundice_monitor
+StandardOutput=append:/home/sahan/jaundice_monitor/service.log
+StandardError=append:/home/sahan/jaundice_monitor/service.log
+Restart=on-failure
+RestartSec=10
+User=sahan
+
+[Install]
+WantedBy=multi-user.target

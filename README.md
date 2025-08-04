@@ -1,174 +1,207 @@
+# Neonatal Jaundice Detection System for Raspberry Pi
 
-# Neonatal Jaundice Detection via CNN + MobileNetV3-Small + Streamlit
+A continuous monitoring system for detecting neonatal jaundice using machine learning, designed specifically for Raspberry Pi deployment in incubator settings.
 
-This project implements a machine learning model to detect potential signs of neonatal jaundice from images of an infant's eyes or skin. It includes a Streamlit web application for easy interaction, allowing users to upload images, use a webcam for snapshots, or utilize a live camera feed for real-time (frame-by-frame) analysis.
+![Live Feed Detection](./ScreenShots/LiveFeedDetection.png)
+
+## Project Overview
+
+This project implements a deep learning model to detect potential signs of neonatal jaundice from images of an infant's skin or eyes. The system runs as a headless monitoring service on Raspberry Pi, making it ideal for continuous infant monitoring in an incubator environment.
 
 ## Model Details
 
-*   **Architecture:** MobileNetV3-Small (fine-tuned)
-*   **Framework:** PyTorch
-*   **Training Data:** [Kaggle Jaundice Image Data](https://www.kaggle.com/datasets/aiolapo/jaundice-image-data)
-    *   Approx. 200 Jaundiced images
-    *   Approx. 560 Normal images
-*   **Input Image Size:** 224x224 pixels (RGB)
-*   **Output:** Binary classification (Normal / Jaundice) with a probability score.
+- **Architecture:** MobileNetV3-Small (optimized for edge devices)
+- **Framework:** ONNX Runtime (optimized for Raspberry Pi)
+- **Training Data:** [Kaggle Jaundice Image Data](https://www.kaggle.com/datasets/aiolapo/jaundice-image-data)
+  - Approx. 200 Jaundiced images
+  - Approx. 560 Normal images
+- **Input Size:** 224x224 pixels (RGB)
+- **Output:** Binary classification (Normal/Jaundice) with probability score
 
-### Training Process Overview 
+## Key Features
 
-The model was trained using a Jupyter Notebook `jaundice-detection.ipynb` . The key steps involved in the training pipeline were:
+- **Continuous Monitoring System:**
 
-1.  **Environment Setup:** Installation of necessary libraries such as PyTorch, TorchVision, Albumentations, OpenCV, Scikit-learn, and Kaggle API for data download.
-2.  **Data Acquisition & Preparation:**
-    *   The "Jaundice Image Data" dataset was downloaded directly from Kaggle using its API.
-    *   Images were organized into `Normal` and `Jaundice` class folders.
-    *   A preliminary Exploratory Data Analysis (EDA) was performed to understand image counts, and view sample images.
-3.  **Data Augmentation and Preprocessing:**
-    *   **Albumentations** library was used for image transformations.
-    *   **Training augmentations** included: `SmallestMaxSize`, `RandomCrop` (to 224x224), `Rotate`, `HorizontalFlip`, and `RandomBrightnessContrast`.
-    *   **Validation augmentations** included: `SmallestMaxSize` and `CenterCrop` (to 224x224).
-    *   All images were normalized using ImageNet's mean and standard deviation.
-4.  **Dataset and DataLoader Creation:**
-    *   A custom PyTorch `Dataset` class (`EyeJaundiceSet` or similar) was implemented to load images and apply transformations.
-    *   The dataset was split into training and validation sets (e.g., 85% train, 15% validation).
-    *   PyTorch `DataLoaders` were created to efficiently load data in batches for training and validation, handling shuffling for the training set.
-5.  **Model Definition (Transfer Learning):**
-    *   A pre-trained MobileNetV3-Small model (weights from ImageNet) was loaded using `torchvision.models`.
-    *   The final classifier layer of MobileNetV3-Small was replaced with a new `nn.Linear` layer suited for binary classification (outputting 1 logit).
-6.  **Training Configuration:**
-    *   **Loss Function:** `nn.BCEWithLogitsLoss` (Binary Cross-Entropy with Logits) was used, suitable for binary classification with a sigmoid applied implicitly.
-    *   **Optimizer:** `AdamW` optimizer was chosen.
-    *   **Learning Rate Scheduler:** `ReduceLROnPlateau` was implemented to reduce the learning rate if validation loss stagnated.
-7.  **Training Loop:**
-    *   The model was trained for a set number of epochs (e.g., 10-15 epochs).
-    *   In each epoch:
-        *   The model was set to `train()` mode, gradients were calculated, and weights were updated using backpropagation.
-        *   The model was then set to `eval()` mode for validation on the unseen validation set.
-        *   Metrics such as training/validation loss, accuracy, sensitivity (recall for Jaundice), and specificity were calculated and printed.
-8.  **Model Evaluation (Post-Training):**
-    *   Grad-CAM was used to visualize which parts of the image the model focused on for its predictions, ensuring it learned relevant features (e.g., the eye region).
-9.  **Model Saving:**
-    *   The state dictionary of the best performing (or final epoch) model was saved to a `.pt` file (e.g., `jaundice_mobilenetv3.pt`) for later use in inference and the Streamlit application.
-    *   The model was also exported to ONNX format for potential cross-platform deployment.
+  - Headless operation for 24/7 infant monitoring
+  - Optimized ONNX model for better performance on Raspberry Pi
+  - Multiple camera access methods for reliability
+  - Automatic alert logging and image saving
+  - Service-based operation with auto-restart capability
 
+- **Robust Camera Handling:**
 
-## Features
+  - Automatic switching between OpenCV and fswebcam methods
+  - Recovery from camera disconnections
+  - Support for various USB webcams
+  - Built-in error handling and diagnostics
 
-*   **Jaundice Detection Model:** Utilizes a Convolutional Neural Network (CNN), specifically MobileNetV3-Small, trained on a dataset of infant images.
-*   **Streamlit Web Interface:** Provides an easy-to-use UI with multiple input methods:
-    *   Image Upload
-    *   Webcam Snapshot
-    *   Live Camera Feed Detection
-*   **Real-time Feedback:** Displays the predicted class (Normal/Jaundice) and an estimated confidence score.
+- **Optimized for Raspberry Pi:**
+  - Low resource usage suitable for Raspberry Pi 3B+
+  - Efficient frame processing
+  - Minimal dependencies
 
-## Screenshots
+## Essential Files
 
-# Upload an Image
-![Upload an Image](./ScreenShots/UploadAnImage.png)
-# Webcam Snapshot
-![Webcam Snapshot](./ScreenShots/UseWebcamSnapshot.png)
-# Live Feed Detection
-![Live Feed Detection](./ScreenShots/LiveFeedDetection.png)
+- `raspberry_pi_optimized.py` - Main monitoring script
+- `jaundice_mobilenetv3.onnx` - ONNX model file
+- `setup_raspberry_pi.sh` - Setup script
+- `fix_camera_complete.sh` - Camera troubleshooting script
 
+## Installation on Raspberry Pi
 
+1. **Transfer essential files to the Raspberry Pi**:
+
+   - `raspberry_pi_optimized.py`
+   - `jaundice_mobilenetv3.onnx`
+   - `setup_raspberry_pi.sh`
+   - `fix_camera_complete.sh`
+
+2. **Create project directory and setup**:
+
+   ```bash
+   mkdir -p ~/jaundice_monitor
+   cd ~/jaundice_monitor
+   # Copy the files to this directory
+   chmod +x setup_raspberry_pi.sh
+   ./setup_raspberry_pi.sh
+   ```
+
+3. **Check service status**:
+
+   ```bash
+   sudo systemctl status jaundice_monitor.service
+   ```
+
+4. **View detection logs**:
+   ```bash
+   tail -f ~/jaundice_monitor/jaundice_detection_log.txt
+   ```
+
+## System Operation
+
+The monitoring system runs as a service that:
+
+1. **Continuously monitors**: Captures and analyzes frames automatically
+2. **Logs detections**: Records all jaundice detections with timestamp and confidence
+3. **Saves images**: Stores images of positive detections in the `detections` folder
+4. **Auto-recovers**: Automatically handles camera disconnections and errors
+
+## Service Management
+
+Control the monitoring service with these commands:
+
+```bash
+# Start the service
+sudo systemctl start jaundice_monitor.service
+
+# Stop the service
+sudo systemctl stop jaundice_monitor.service
+
+# Check service status
+sudo systemctl status jaundice_monitor.service
+
+# Enable auto-start on boot
+sudo systemctl enable jaundice_monitor.service
+
+# View logs
+journalctl -u jaundice_monitor.service
+```
+
+## Troubleshooting
+
+If camera connection fails:
+
+1. **Run the camera fix script**:
+
+   ```bash
+   cd ~/jaundice_monitor
+   chmod +x fix_camera_complete.sh
+   ./fix_camera_complete.sh
+   ```
+
+2. **Check USB power issues**:
+
+   - Try a powered USB hub for better camera stability
+   - Connect camera directly to Raspberry Pi USB port
+   - Raspberry Pi 3B+ has limited USB power which can affect camera operation
+
+3. **Camera hardware checks**:
+
+   - Verify camera works on another computer
+   - Try different USB ports on the Raspberry Pi
+   - Check if camera is recognized with `lsusb` command
+
+4. **Service diagnostics**:
+
+   ```bash
+   # Check detailed service logs
+   journalctl -u jaundice_monitor.service
+
+   # Check camera detection
+   ls /dev/video*
+   ```
 
 ## Project Structure
 
 ```
 .
-├── jaundice_env/           # Python virtual environment (excluded by .gitignore)
-├── data/                   # (Optional) Dataset images (likely excluded by .gitignore)
-├── app.py                  # Main Streamlit application script
-├── jaundice_mobilenetv3.pt # Trained PyTorch model file (or similar name)
-├── requirements.txt        # Python package dependencies
-├── .gitignore              # Specifies intentionally untracked files
-└── README.md               # This file
+├── raspberry_pi_optimized.py   # Main Raspberry Pi monitoring script
+├── jaundice_mobilenetv3.onnx   # ONNX model file for deployment
+├── setup_raspberry_pi.sh       # Setup script
+├── fix_camera_complete.sh      # Camera troubleshooting script
+└── ESSENTIALS.md               # Guide to essential files
 ```
 
-## Setup and Installation
+## Technical Details
 
-Follow these steps to set up the project environment and run the application locally.
+### Model Information
 
-### Prerequisites
+- **Model Size**: 5.81 MB (ONNX format)
+- **Base Model**: MobileNetV3-Small
+- **Preprocessing**: Resize to 224x224, normalize with ImageNet stats
+- **Inference Speed**: ~5 FPS on Raspberry Pi 3B+
+- **Accuracy**: Over 90% on test dataset
 
-*   Python 3.8+
-*   Git
-*   Access to a webcam (for webcam and live feed features)
+### Raspberry Pi Optimizations
 
-### 1. Clone the Repository
+- **Multiple Camera Methods**: OpenCV with fswebcam fallback
+- **Frame Buffer Management**: Optimized to reduce memory usage
+- **Thread Control**: Limited to 2 threads for better Pi performance
+- **Error Handling**: Robust recovery from camera disconnections
+- **Service Management**: Systemd service with auto-restart
+
+### Hardware Requirements
+
+- **Recommended**: Raspberry Pi 3B+ or newer
+- **Storage**: At least 1GB free space
+- **Camera**: USB webcam with UVC support
+- **Power**: Recommended to use official Raspberry Pi power supply
+- **Optional**: Powered USB hub for better camera reliability
+
+## Command-line Arguments
+
+The monitoring script supports several command-line arguments:
 
 ```bash
-git clone https://github.com/sahanrashmikaslk/Neonatal_jaundice_detection.git
-cd Neonatal_jaundice_detection
+python raspberry_pi_optimized.py [OPTIONS]
+
+Options:
+  --camera INTEGER      Camera index (default: 0)
+  --display             Display video feed (not recommended for headless)
+  --threshold FLOAT     Alert threshold for jaundice probability (default: 0.7)
+  --single              Single detection mode (exit after one detection)
 ```
 
+## Additional Resources
 
-### 2. Create and Activate a Virtual Environment
+- For a complete guide to the essential files, see [ESSENTIALS.md](./ESSENTIALS.md)
+- Original dataset: [Kaggle Jaundice Image Data](https://www.kaggle.com/datasets/aiolapo/jaundice-image-data)
 
-It's highly recommended to use a virtual environment to manage project dependencies.
+## License
 
-**Linux/macOS:**
-```bash
-python3 -m venv jaundice_env
-source jaundice_env/bin/activate
-```
+[Your license information]
 
-**Windows (Git Bash or PowerShell):**
-```bash
-python -m venv jaundice_env
-.\jaundice_env\Scripts\activate
-```
+## Acknowledgments
 
-### 3. Install Dependencies
-
-Install the required Python packages using the `requirements.txt` file:
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Obtain the Dataset (If not included)
-
-
-The model was trained on the [Kaggle Jaundice Image Data](https://www.kaggle.com/datasets/aiolapo/jaundice-image-data).
-1.  Download the dataset from Kaggle.
-2.  Ensure you have the Kaggle API token set up (`~/.kaggle/kaggle.json` or `C:\Users\<YourUser>\.kaggle\kaggle.json`).
-3.  Download and extract the data into a `data/` directory in the project root:
-    ```bash
-    # Make sure your Kaggle API token is configured
-    mkdir data
-    kaggle datasets download -d aiolapo/jaundice-image-data -p ./data --unzip
-    ```
-    The expected structure within `data/` is:
-    ```
-    data/
-    ├── Jaundice/
-    └── Normal/
-    ```
-
-
-## Running the Application
-
-Once the setup is complete, you can run the Streamlit web application:
-
-```bash
-streamlit run app.py
-```
-
-This will typically open the application in your default web browser at `http://localhost:8501`.
-
-## How to Use
-
-1.  Launch the application using the command above.
-2.  Select an input method from the sidebar:
-    *   **Upload an Image:** Browse and select an image file (jpg, png, jpeg).
-    *   **Use Webcam Snapshot:** Allow webcam access, position the subject, and click "Take a picture".
-    *   **Live Feed Detection:** Allow webcam access, click "Start Live Detection". The app will continuously analyze frames. Click "Stop Live Detection" to end.
-3.  Click the "Analyze" button (for uploads/snapshots) or observe the live feed.
-4.  The prediction ("Normal" or "Jaundice") along with a confidence score will be displayed.
-
-**Tips for Best Results (especially for webcam/live feed):**
-*   Ensure good, consistent lighting on the subject's eye or skin.
-*   Try to get a clear, focused image/video of the sclera (white part of the eye) if possible.
-*   Minimize movement during live detection.
-
-
-
+- Dataset provided by [Kaggle Jaundice Image Data](https://www.kaggle.com/datasets/aiolapo/jaundice-image-data)
+- MobileNetV3 architecture by Howard et al.

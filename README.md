@@ -2,11 +2,10 @@
 
 A continuous monitoring system for detecting neonatal jaundice using machine learning, designed specifically for Raspberry Pi deployment in incubator settings.
 
-<!-- ![Live Feed Detection](./ScreenShots/LiveFeedDetection.png) -->
-
 ## Project Overview
 
 This project implements a deep learning model to detect potential signs of neonatal jaundice from images of an infant's skin or eyes. The system runs as a headless monitoring service on Raspberry Pi, making it ideal for continuous infant monitoring in an incubator environment.
+
 
 ## Model Details
 
@@ -47,32 +46,64 @@ This project implements a deep learning model to detect potential signs of neona
 - `setup_raspberry_pi.sh` - Setup script
 - `fix_camera_complete.sh` - Camera troubleshooting script
 
+## Project Structure
+
+```
+.
+├── raspberry_pi_optimized.py   # Main Raspberry Pi monitoring script
+├── jaundice_mobilenetv3.onnx   # ONNX model file for deployment
+├── setup_raspberry_pi.sh       # Setup script
+└── fix_camera_complete.sh      # Camera troubleshooting script
+```
+
+
 ## Installation on Raspberry Pi
 
-1. **Transfer essential files to the Raspberry Pi**:
+### Step 1: Transfer Files from Windows to Raspberry Pi
 
-   - `raspberry_pi_optimized.py`
-   - `jaundice_mobilenetv3.onnx`
-   - `setup_raspberry_pi.sh`
-   - `fix_camera_complete.sh`
+1. **Required files to transfer**:
 
-2. **Create project directory and setup**:
+   - `raspberry_pi_optimized.py` - Main monitoring script
+   - `jaundice_mobilenetv3.onnx` - ONNX model file
+   - `setup_raspberry_pi.sh` - Setup script
+   - `fix_camera_complete.sh` - Camera troubleshooting script
+
+2. **Using SCP (Secure Copy) from Windows**:
+
+   Use PowerShell to transfer files (replace with your Pi's IP):
+
+   ```bash
+   scp C:\path\to\files\* sahan@192.168.1.100:~/
+   ```
+
+3. **Using PuTTY's PSCP (Alternative)**:
+
+   Download PSCP and use this command:
+
+   ```bash
+   pscp C:\path\to\files\* sahan@192.168.1.100:~/
+   ```
+
+### Step 2: Setup on Raspberry Pi
+
+1. **Create project directory and organize files**:
 
    ```bash
    mkdir -p ~/jaundice_monitor
+   cd ~
+   mv raspberry_pi_optimized.py jaundice_mobilenetv3.onnx setup_raspberry_pi.sh fix_camera_complete.sh ~/jaundice_monitor/
    cd ~/jaundice_monitor
-   # Copy the files to this directory
    chmod +x setup_raspberry_pi.sh
    ./setup_raspberry_pi.sh
    ```
 
-3. **Check service status**:
+2. **Check service status**:
 
    ```bash
    sudo systemctl status jaundice_monitor.service
    ```
 
-4. **View detection logs**:
+3. **View detection logs**:
    ```bash
    tail -f ~/jaundice_monitor/jaundice_detection_log.txt
    ```
@@ -141,16 +172,69 @@ If camera connection fails:
    ls /dev/video*
    ```
 
-## Project Structure
+If you have an updated PyTorch model (.pt file) and need to convert it to ONNX format for Raspberry Pi:
 
-```
-.
-├── raspberry_pi_optimized.py   # Main Raspberry Pi monitoring script
-├── jaundice_mobilenetv3.onnx   # ONNX model file for deployment
-├── setup_raspberry_pi.sh       # Setup script
-├── fix_camera_complete.sh      # Camera troubleshooting script
-└── ESSENTIALS.md               # Guide to essential files
-```
+### Using the Conversion Script
+
+1. **Use the provided conversion script**:
+
+   ```bash
+   # On your Windows PC
+   python convert_to_onnx.py jaundice_mobilenetv3.pt jaundice_mobilenetv3.onnx
+   ```
+
+   This script takes two arguments:
+
+   - Source .pt file path
+   - Destination .onnx file path
+
+2. **Transfer the resulting ONNX file** to your Raspberry Pi using the methods described above.
+
+
+## Additional Resources for File Transfer
+
+### Using Windows File Sharing (SMB)
+
+1. **Enable SSH and Samba on Raspberry Pi**:
+
+   ```bash
+   sudo apt update
+   sudo apt install samba samba-common-bin
+   ```
+
+2. **Configure Samba** by editing the configuration file and adding your home directory as a share
+
+3. **Set Samba password** for your user
+
+4. **Access from Windows** by entering `\\RASPBERRY_PI_IP\home` in File Explorer
+
+## Checking System Status
+
+1. **Check service status**:
+
+   ```bash
+   sudo systemctl status jaundice_monitor.service
+   ```
+
+2. **View detection logs**:
+
+   ```bash
+   tail -f ~/jaundice_monitor/jaundice_detection_log.txt
+   ```
+
+3. **View saved detection images**:
+   ```bash
+   ls -la ~/jaundice_monitor/detections/
+   ```
+
+## System Operation
+
+The monitoring system runs as a service that:
+
+1. **Continuously monitors**: Captures and analyzes frames automatically
+2. **Logs detections**: Records all jaundice detections with timestamp and confidenceundice using machine learning, designed specifically for Raspberry Pi deployment in incubator settings.
+
+<!-- ![Live Feed Detection](./ScreenShots/LiveFeedDetection.png) -->
 
 ## Technical Details
 

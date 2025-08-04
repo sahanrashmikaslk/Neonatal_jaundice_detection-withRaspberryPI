@@ -2,7 +2,7 @@
 
 A continuous monitoring system for detecting neonatal jaundice using machine learning, designed specifically for Raspberry Pi deployment in incubator settings.
 
-![Live Feed Detection](./ScreenShots/LiveFeedDetection.png)
+<!-- ![Live Feed Detection](./ScreenShots/LiveFeedDetection.png) -->
 
 ## Project Overview
 

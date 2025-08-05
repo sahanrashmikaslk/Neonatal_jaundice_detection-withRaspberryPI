@@ -276,14 +276,7 @@ Options:
   --single              Single detection mode (exit after one detection)
 ```
 
-## Additional Resources
 
-- For a complete guide to the essential files, see [ESSENTIALS.md](./ESSENTIALS.md)
-- Original dataset: [Kaggle Jaundice Image Data](https://www.kaggle.com/datasets/aiolapo/jaundice-image-data)
-
-## License
-
-[Your license information]
 
 ## Acknowledgments
 
